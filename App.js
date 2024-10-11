@@ -1,20 +1,58 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import SignInScreen from './screens/SignInScreen';
+import SignOutScreen from './screens/SignOutScreen';
+import HomeScreen from './screens/HomeScreen';
 
-export default function App() {
+
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function MainTabs({ handleSignOut }) {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Tab.Navigator>
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="SignOut">
+        {(props) => <SignOutScreen {...props} onSignOut={handleSignOut} />} 
+      </Tab.Screen>
+    </Tab.Navigator>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+function AppNavigator() {
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  const handleSignIn = () => {
+    // Todo - implement sign in & sing out
+    setIsSignedIn(true); 
+  };
+
+  const handleSignOut = () => {
+    setIsSignedIn(false);
+  };
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        {!isSignedIn ? (
+          <Stack.Screen name="SignIn">
+            {(props) => <SignInScreen {...props} onSignIn={handleSignIn} />}
+          </Stack.Screen>
+        ) : (
+          <Stack.Screen
+            name="Main"
+            options={{ headerShown: false }}
+          >
+            {(props) => <MainTabs {...props} handleSignOut={handleSignOut} />}
+          </Stack.Screen>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return <AppNavigator />;
+}
