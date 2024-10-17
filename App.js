@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './config/firebaseConfig';
 import SignInScreen from './screens/SignInScreen';
 import SignOutScreen from './screens/SignOutScreen';
+import SignUpScreen from './screens/SignUpScreen';
 import HomeScreen from './screens/HomeScreen';
 import BetsScreen from './screens/BetsScreen';
 
@@ -14,7 +17,7 @@ const Tab = createBottomTabNavigator();
 
 function MainTabs({ handleSignOut }) {
   return (
-    <Tab.Navigator 
+    <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
@@ -34,37 +37,41 @@ function MainTabs({ handleSignOut }) {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Bets" component={BetsScreen} />
       <Tab.Screen name="SignOut">
-        {(props) => <SignOutScreen {...props} onSignOut={handleSignOut} />} 
+        {(props) => <SignOutScreen {...props} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
 }
 
 function AppNavigator() {
+
   const [isSignedIn, setIsSignedIn] = useState(false);
 
-  const handleSignIn = () => {
-    // Todo - implement sign in & sing out
-    setIsSignedIn(true); 
-  };
-
-  const handleSignOut = () => {
-    setIsSignedIn(false);
-  };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsSignedIn(!!user);
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
         {!isSignedIn ? (
-          <Stack.Screen name="SignIn">
-            {(props) => <SignInScreen {...props} onSignIn={handleSignIn} />}
-          </Stack.Screen>
+          <>
+            <Stack.Screen name="SignIn">
+              {(props) => <SignInScreen {...props} onSignIn={() => setIsSignedIn(true)} />}
+            </Stack.Screen>
+            <Stack.Screen name="SignUp">
+              {(props) => <SignUpScreen {...props} onSignOut={() => setIsSignedIn(false)} />}
+            </Stack.Screen>
+          </>
         ) : (
           <Stack.Screen
             name="Main"
             options={{ headerShown: false }}
           >
-            {(props) => <MainTabs {...props} handleSignOut={handleSignOut} />}
+            {(props) => <MainTabs {...props} />}
           </Stack.Screen>
         )}
       </Stack.Navigator>
