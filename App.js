@@ -10,6 +10,7 @@ import SignOutScreen from './screens/SignOutScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import HomeScreen from './screens/HomeScreen';
 import BetsScreen from './screens/BetsScreen';
+import AddBetScreen from './screens/AddBetScreen';
 
 
 const Stack = createStackNavigator();
@@ -67,12 +68,19 @@ function AppNavigator() {
             </Stack.Screen>
           </>
         ) : (
-          <Stack.Screen
-            name="Main"
-            options={{ headerShown: false }}
-          >
-            {(props) => <MainTabs {...props} />}
-          </Stack.Screen>
+          <>
+            <Stack.Screen
+              name="Main"
+              options={{ headerShown: false }}
+            >
+              {(props) => <MainTabs {...props} />}
+            </Stack.Screen>
+            <Stack.Screen
+              name="AddBet"
+              component={AddBetScreen}
+              options={{ title: 'Add New Bet' }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
