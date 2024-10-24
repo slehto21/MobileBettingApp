@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import { signOut } from '../services/authService';
 
 export default function SignOutScreen({ navigation }) {
@@ -12,10 +12,19 @@ export default function SignOutScreen({ navigation }) {
       console.error(error);
     }
   };
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={styles.container}>
       <Text>Sign Out Screen</Text>
       <Button title="Sign Out" onPress={handleSignOut} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

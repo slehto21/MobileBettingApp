@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, Button, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { signIn } from '../services/authService';
 
 export default function SignInScreen({ onSignIn, navigation }) {
@@ -19,25 +19,49 @@ export default function SignInScreen({ onSignIn, navigation }) {
   }
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Sign In</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign In</Text>
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 12, width: 200 }}
+        style={styles.input}
       />
       <TextInput
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 12, width: 200 }}
+        style={styles.input}
       />
       <Button title="Sign In" onPress={handleSignIn} />
       <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-        <Text style={{ color: 'blue', marginTop: 20 }}>Don't have an account? Sign Up!</Text>
+        <Text style={styles.link}>Don't have an account? Sign Up!</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    width: 200,
+    paddingHorizontal: 10,
+  },
+  link: {
+    color: 'blue',
+    marginTop: 20,
+  },
+});

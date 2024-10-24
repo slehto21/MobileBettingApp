@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Button, TextInput } from 'react-native';
+import { View, Text, Button, TextInput, StyleSheet} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { db, auth } from '../config/firebaseConfig';
@@ -92,8 +92,8 @@ export default function AddBetScreen({ navigation }) {
               bookmaker: bet.bookmaker,
               user: auth.currentUser.uid
             });
-            console.log('Bet: ', bet);
-            console.log('Document written with ID: ', docRef.id);
+            // console.log('Bet: ', bet);
+            // console.log('Document written with ID: ', docRef.id);
             navigation.goBack();
           } catch (e) {
             console.error('Error adding document: ', e);
@@ -102,12 +102,12 @@ export default function AddBetScreen({ navigation }) {
 
     return (
         <View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16 }}>
+            <View style={styles.header}>
                 <Text>Add Bet Screen</Text>
             </View>
-            <View style={{ padding: 16 }}>
+            <View style={styles.container}>
                 <TextInput
-                    style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 8 }}
+                    style={styles.input}
                     placeholder="Name"
                     value={bet.name}
                     onChangeText={(text) => handleChange('name', text)}
@@ -116,7 +116,7 @@ export default function AddBetScreen({ navigation }) {
                 <Picker
                     placeholder='Sport'
                     selectedValue={bet.sport}
-                    style={{ height: 50, width: '100%', marginBottom: 8 }}
+                    style={styles.picker}
                     onValueChange={(itemValue) => handleChange('sport', itemValue)}
                 >
                     <Picker.Item label="-------" value="Undefined" />
@@ -125,14 +125,14 @@ export default function AddBetScreen({ navigation }) {
                     ))}
                 </Picker>
                 <TextInput
-                    style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 8 }}
+                    style={styles.input}
                     placeholder="Odds"
                     value={bet.odds}
                     keyboardType='numeric'
                     onChangeText={(text) => handleChange('odds', text)}
                 />
                 <TextInput
-                    style={{ height: 40, borderColor: 'gray', borderWidth: 1, marginBottom: 8 }}
+                    style={styles.input}
                     placeholder="Stake"
                     value={bet.stake}
                     keyboardType='numeric'
@@ -142,7 +142,7 @@ export default function AddBetScreen({ navigation }) {
                 <Picker
                     placeholder='Bookmaker'
                     selectedValue={bet.bookmaker}
-                    style={{ height: 50, width: '100%', marginBottom: 8 }}
+                    style={styles.picker}
                     onValueChange={(itemValue) => handleChange('bookmaker', itemValue)}
                 >
                     <Picker.Item label="-------" value="Undefined" />
@@ -154,7 +154,7 @@ export default function AddBetScreen({ navigation }) {
                 <Picker
                     placeholder='Status'
                     selectedValue={bet.status}
-                    style={{ height: 50, width: '100%', marginBottom: 8 }}
+                    style={styles.picker}
                     onValueChange={(itemValue) => handleChange('status', itemValue)}
                 >
                     <Picker.Item label="-------" value="Undefined" />
@@ -167,3 +167,26 @@ export default function AddBetScreen({ navigation }) {
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16
+    },
+    container: {
+        padding: 16
+    },
+    input: {
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginBottom: 8
+    },
+    picker: {
+        height: 50,
+        width: '100%',
+        marginBottom: 8
+    }
+});
