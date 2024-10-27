@@ -1,71 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, Button, TextInput, StyleSheet} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { db, auth } from '../config/firebaseConfig';
 import { collection, addDoc } from "firebase/firestore";
 
+export default function AddBetScreen({ route, navigation }) {
 
-export default function AddBetScreen({ navigation }) {
-
-    const [sports, setSports] = useState([
-        'Football',
-        'Basketball',
-        'Tennis',
-        'Horse Racing',
-        'Cricket',
-        'Rugby',
-        'Boxing',
-        'Golf',
-        'Darts',
-        'Snooker',
-        'Cycling',
-        'Motor Racing',
-        'American Football',
-        'Baseball',
-        'Ice Hockey',
-        'Handball',
-        'Volleyball',
-        'Table Tennis',
-        'Esports',
-        'Specials',
-        'Politics',
-        'Entertainment',
-        'Financials',
-        'Virtual Sports',
-        'Other'
-    ]);
-    const [bookmakers, setBookmakers] = useState([
-        'Bet365',
-        'William Hill',
-        'Paddy Power',
-        'Ladbrokes',
-        'Betfair',
-        'Coral',
-        'Betfred',
-        'Sky Bet',
-        'Unibet',
-        '888sport',
-        'BetVictor',
-        'BoyleSports',
-        'Betway',
-        'Sportingbet',
-        'Bwin',
-        'Betdaq',
-        'Smarkets',
-        'Matchbook',
-        'Spreadex'
-    ]);
-    const [statuses, setStatuses] = useState([
-        'Pending',
-        'Won',
-        'Lost',
-        'Void',
-        'Half Won',
-        'Half Lost',
-        'Refunded',
-        'Cancelled'
-    ]);
+    const { sports, bookmakers, statuses } = route.params;
     const [bet, setBet] = useState({
         name: '',
         stake: 0,
@@ -102,17 +43,19 @@ export default function AddBetScreen({ navigation }) {
 
     return (
         <View>
-            <View style={styles.header}>
-                <Text>Add Bet Screen</Text>
-            </View>
             <View style={styles.container}>
+                <Text>
+                    Name
+                </Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Name"
                     value={bet.name}
                     onChangeText={(text) => handleChange('name', text)}
                 />
-                <Text>Sport</Text>
+                <Text>
+                    Sport
+                </Text>
                 <Picker
                     placeholder='Sport'
                     selectedValue={bet.sport}
@@ -124,6 +67,9 @@ export default function AddBetScreen({ navigation }) {
                         <Picker.Item key={index} label={sport} value={sport} />
                     ))}
                 </Picker>
+                <Text>
+                    Odds
+                </Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Odds"
@@ -131,6 +77,9 @@ export default function AddBetScreen({ navigation }) {
                     keyboardType='numeric'
                     onChangeText={(text) => handleChange('odds', text)}
                 />
+                <Text>
+                    Stake
+                </Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Stake"
@@ -138,7 +87,9 @@ export default function AddBetScreen({ navigation }) {
                     keyboardType='numeric'
                     onChangeText={(text) => handleChange('stake', text)}
                 />
-                <Text>Bookmaker</Text>
+                <Text>
+                    Bookmaker
+                </Text>
                 <Picker
                     placeholder='Bookmaker'
                     selectedValue={bet.bookmaker}
@@ -150,7 +101,9 @@ export default function AddBetScreen({ navigation }) {
                         <Picker.Item key={index} label={bookmaker} value={bookmaker} />
                     ))}
                 </Picker>
-                <Text>Status</Text>
+                <Text>
+                    Status
+                </Text>
                 <Picker
                     placeholder='Status'
                     selectedValue={bet.status}
@@ -169,12 +122,6 @@ export default function AddBetScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 16
-    },
     container: {
         padding: 16
     },

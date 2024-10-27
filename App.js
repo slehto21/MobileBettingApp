@@ -11,6 +11,7 @@ import SignUpScreen from './screens/SignUpScreen';
 import HomeScreen from './screens/HomeScreen';
 import BetsScreen from './screens/BetsScreen';
 import AddBetScreen from './screens/AddBetScreen';
+import EditBetScreen from './screens/EditBetScreen';
 
 
 const Stack = createStackNavigator();
@@ -79,6 +80,11 @@ function AppNavigator() {
               name="AddBet"
               component={AddBetScreen}
               options={{ title: 'Add New Bet' }}
+            />
+            <Stack.Screen
+              name="EditBet"
+              component={EditBetScreen}
+              options={{ title: 'Edit Bet' }}
             />
           </>
         )}
