@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { db, auth } from '../config/firebaseConfig';
-import { collection, where, orderBy, query, onSnapshot } from "firebase/firestore";
+import { collection, where, orderBy, query, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import sportIcons from '../utils/SportIcons';
 
 
@@ -353,6 +353,14 @@ export default function BetsScreen({ navigation }) {
         }
     };
 
+    const deleteBet = async (betId) => {
+        try {
+            await deleteDoc(doc(db, 'bets', betId));
+        } catch (e) {
+            console.error('Error deleting document: ', e);
+        }
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -381,8 +389,9 @@ export default function BetsScreen({ navigation }) {
                                     <Text>Bookmaker: {item.bookmaker}</Text>
                                     <Text>Date: {item.date.toDateString()}</Text>
                                 </View>
-                                <View>
+                                <View style={styles.buttons}>
                                     <Button title="Edit" onPress={() => navigation.navigate('EditBet', {
+                                        deleteBet,
                                         sports,
                                         bookmakers,
                                         statuses,
@@ -396,6 +405,7 @@ export default function BetsScreen({ navigation }) {
                                             bookmaker: item.bookmaker
                                         }
                                     })} />
+                                    <Button title="Delete" color="red" onPress={() => deleteBet(item.id)} />
                                 </View>
                             </View>
                         )}
@@ -448,5 +458,10 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         borderTopWidth: 1,
         borderTopColor: '#ccc',
+    },
+    buttons: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 16,
     },
 });

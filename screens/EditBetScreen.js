@@ -7,7 +7,7 @@ import { updateDoc, doc } from 'firebase/firestore';
 
 export default function EditBetScreen({ route, navigation }) {
 
-    const { sports, bookmakers, statuses, bet } = route.params;
+    const { deleteBet, sports, bookmakers, statuses, bet } = route.params;
     const [updatedBet, setUpdatedBet] = useState({
         name: bet.name,
         stake: bet.stake,
@@ -39,6 +39,11 @@ export default function EditBetScreen({ route, navigation }) {
             console.error('Error updating document: ', e);
         }
     }
+
+    const handleDeleteBet = () => {
+        deleteBet(bet.id);
+        navigation.goBack();
+    };
 
     return (
         <View>
@@ -111,7 +116,11 @@ export default function EditBetScreen({ route, navigation }) {
                         <Picker.Item key={index} label={bookmaker} value={bookmaker} />
                     ))}
                 </Picker>
-                <Button title="Update Bet" onPress={updateBetToDB} />
+                <View style={styles.buttons}>
+                    <Button title="Update Bet" onPress={updateBetToDB} />
+                    <Button title="Delete Bet" color="red" onPress={handleDeleteBet} />
+                    <Button title="Cancel" color="grey" onPress={() => navigation.goBack()} />
+                </View>
             </View>
         </View>
     );
@@ -131,5 +140,10 @@ const styles = StyleSheet.create({
         height: 50,
         width: '100%',
         marginBottom: 8
+    },
+    buttons: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 16
     }
 });
