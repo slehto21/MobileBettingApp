@@ -66,6 +66,10 @@ export const BetsProvider = ({ children }) => {
 
     useEffect(() => {
         try {
+            if (!auth.currentUser) {
+                return;
+            }
+            
             const betsQuery = query(
                 collection(db, 'bets'),
                 where('user', '==', auth.currentUser.uid),
