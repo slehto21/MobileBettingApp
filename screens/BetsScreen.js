@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { db, auth } from '../config/firebaseConfig';
-import { collection, where, orderBy, query, onSnapshot, doc, deleteDoc } from "firebase/firestore";
+import { collection, where, orderBy, query, onSnapshot, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import sportIcons from '../utils/SportIcons';
 
 
@@ -67,6 +67,8 @@ export default function BetsScreen({ navigation }) {
     ]);
     const [bets, setBets] = useState([]);
     const [expandedBet, setExpandedBet] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedBetId, setSelectedBetId] = useState(null);
 
     // useEffect(() => {
     //     setBets([
@@ -361,6 +363,24 @@ export default function BetsScreen({ navigation }) {
         }
     };
 
+    const handleOpenModal = (betId) => {
+        setSelectedBetId(betId);
+        setModalVisible(true);
+    }
+
+    const updateStatus = (status) => {
+        try{
+            console.log('Status: ', status);
+            console.log('Bet ID: ', selectedBetId);
+            const betRef = doc(db, 'bets', selectedBetId);
+            updateDoc(betRef, {
+                status: status
+            });
+        } catch (e) {
+            console.error('Error updating document: ', e);
+        }
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -377,7 +397,32 @@ export default function BetsScreen({ navigation }) {
                                 </View>
                             )}
                             <Text style={styles.betName}>{item.name}</Text>
-                            <Text style={styles.betStatus}>{item.status}</Text>
+                            <TouchableOpacity onPress={() => handleOpenModal(item.id)} style={styles.expandedStatus}>
+                                <Text style={styles.betStatus}>{item.status}</Text>
+                            </TouchableOpacity>
+                            <Modal
+                                animationType="none"
+                                transparent={true}
+                                visible={modalVisible}
+                                onRequestClose={() => setModalVisible(false)}
+                            >
+                                <View style={styles.modalContainer}>
+                                    <FlatList
+                                        data={statuses}
+                                        keyExtractor={(item) => item}
+                                        renderItem={({ item }) => (
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    updateStatus(item);
+                                                    setModalVisible(false);
+                                                }}
+                                            >
+                                                <Text style={styles.modalItem}>{item}</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    />
+                                </View>
+                            </Modal>
                         </View>
                         {expandedBet === item.id && (
                             <View>
@@ -463,5 +508,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         marginTop: 16,
+    },
+    expandedStatus: {
+        padding: 8,
+        borderWidth: 1,
+        borderColor: 'gray',
+        borderRadius: 4,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalItem: {
+        padding: 16,
+        fontSize: 18,
+        color: '#fff',
+        marginVertical: 8,
+        borderRadius: 8,
     },
 });
