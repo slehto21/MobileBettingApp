@@ -18,31 +18,33 @@ import EditBetScreen from './screens/EditBetScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function MainTabs({ handleSignOut }) {
+function MainTabs() {
   return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+    <BetsProvider>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Bets') {
-            iconName = focused ? 'ticket' : 'ticket-outline';
-          } else if (route.name === 'SignOut') {
-            iconName = focused ? 'log-out' : 'log-out-outline';
-          }
+            if (route.name === 'Home') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Bets') {
+              iconName = focused ? 'ticket' : 'ticket-outline';
+            } else if (route.name === 'SignOut') {
+              iconName = focused ? 'log-out' : 'log-out-outline';
+            }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Bets" component={BetsScreen} />
-      <Tab.Screen name="SignOut">
-        {(props) => <SignOutScreen {...props} />}
-      </Tab.Screen>
-    </Tab.Navigator>
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Bets" component={BetsScreen} />
+        <Tab.Screen name="SignOut">
+          {(props) => <SignOutScreen {...props} />}
+        </Tab.Screen>
+      </Tab.Navigator>
+    </BetsProvider>
   );
 }
 
