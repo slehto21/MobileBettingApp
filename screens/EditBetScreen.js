@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, Button, TextInput, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { db } from '../config/firebaseConfig';
 import { updateDoc, doc } from 'firebase/firestore';
+import { BetsContext } from '../context/BetsContexts';
 
 
 export default function EditBetScreen({ route, navigation }) {
 
-    const { deleteBet, sports, bookmakers, statuses, bet } = route.params;
+    const { sports, bookmakers, statuses, deleteBet } = useContext(BetsContext);
+    const { bet } = route.params;
     const [updatedBet, setUpdatedBet] = useState({
         name: bet.name,
         stake: bet.stake,

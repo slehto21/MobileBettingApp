@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, Button, TextInput, StyleSheet} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { db, auth } from '../config/firebaseConfig';
 import { collection, addDoc } from "firebase/firestore";
+import { BetsContext } from '../context/BetsContexts';
 
-export default function AddBetScreen({ route, navigation }) {
+export default function AddBetScreen({ navigation }) {
 
-    const { sports, bookmakers, statuses } = route.params;
+    const { sports, bookmakers, statuses } = useContext(BetsContext);
     const [bet, setBet] = useState({
         name: '',
         stake: 0,
@@ -33,8 +34,6 @@ export default function AddBetScreen({ route, navigation }) {
               bookmaker: bet.bookmaker,
               user: auth.currentUser.uid
             });
-            // console.log('Bet: ', bet);
-            // console.log('Document written with ID: ', docRef.id);
             navigation.goBack();
           } catch (e) {
             console.error('Error adding document: ', e);
