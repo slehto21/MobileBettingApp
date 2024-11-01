@@ -1,23 +1,32 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, Button, TextInput, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { db } from '../config/firebaseConfig';
 import { updateDoc, doc } from 'firebase/firestore';
 import { BetsContext } from '../context/BetsContexts';
+import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 
 export default function EditBetScreen({ route, navigation }) {
 
     const { sports, bookmakers, statuses, deleteBet } = useContext(BetsContext);
-    const { bet } = route.params;
+    const { bets } = useContext(BetsContext);
+    const { betId } = route.params;
     const [updatedBet, setUpdatedBet] = useState({
-        name: bet.name,
-        stake: bet.stake,
-        odds: bet.odds,
-        sport: bet.sport,
-        status: bet.status,
-        bookmaker: bet.bookmaker,
+        name: '',
+        stake: 0,
+        date: new Date(),
+        odds: 0,
+        sport: '',
+        status: '',
+        bookmaker: '',
     });
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    useEffect(() => {
+        const bet = bets.find(bet => bet.id === betId);
+        setUpdatedBet(bet);
+    }, [betId]);
 
     const handleChange = (name, value) => {
         setUpdatedBet({ ...updatedBet, [name]: value });
@@ -25,9 +34,9 @@ export default function EditBetScreen({ route, navigation }) {
 
     const updateBetToDB = async () => {
         try {
-            console.log('Bet: ', bet);
+            console.log('Bet: ', betId);
             console.log('Updated Bet: ', updatedBet);
-            const betRef = doc(db, 'bets', bet.id);
+            const betRef = doc(db, 'bets', betId);
             await updateDoc(betRef, {
                 name: updatedBet.name,
                 stake: parseFloat(updatedBet.stake),
@@ -35,6 +44,7 @@ export default function EditBetScreen({ route, navigation }) {
                 sport: updatedBet.sport,
                 status: updatedBet.status,
                 bookmaker: updatedBet.bookmaker,
+                date: updatedBet.date,
             });
             navigation.goBack();
         } catch (e) {
@@ -43,7 +53,7 @@ export default function EditBetScreen({ route, navigation }) {
     }
 
     const handleDeleteBet = () => {
-        deleteBet(bet.id);
+        deleteBet(betId);
         navigation.goBack();
     };
 
@@ -73,16 +83,6 @@ export default function EditBetScreen({ route, navigation }) {
                     ))}
                 </Picker>
                 <Text>
-                    Stake
-                </Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Stake"
-                    value={updatedBet.stake.toString()}
-                    keyboardType='numeric'
-                    onChangeText={(text) => handleChange('stake', text)}
-                />
-                <Text>
                     Odds
                 </Text>
                 <TextInput
@@ -93,18 +93,15 @@ export default function EditBetScreen({ route, navigation }) {
                     onChangeText={(text) => handleChange('odds', text)}
                 />
                 <Text>
-                    Status
+                    Stake
                 </Text>
-                <Picker
-                    placeholder='Status'
-                    selectedValue={updatedBet.status}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => handleChange('status', itemValue)}
-                >
-                    {statuses.map((status, index) => (
-                        <Picker.Item key={index} label={status} value={status} />
-                    ))}
-                </Picker>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Stake"
+                    value={updatedBet.stake.toString()}
+                    keyboardType='numeric'
+                    onChangeText={(text) => handleChange('stake', text)}
+                />
                 <Text>
                     Bookmaker
                 </Text>
@@ -118,6 +115,37 @@ export default function EditBetScreen({ route, navigation }) {
                         <Picker.Item key={index} label={bookmaker} value={bookmaker} />
                     ))}
                 </Picker>
+                <Text>
+                    Status
+                </Text>
+                <Picker
+                    placeholder='Status'
+                    selectedValue={updatedBet.status}
+                    style={styles.picker}
+                    onValueChange={(itemValue) => handleChange('status', itemValue)}
+                >
+                    {statuses.map((status, index) => (
+                        <Picker.Item key={index} label={status} value={status} />
+                    ))}
+                </Picker>
+                <View style={styles.dateButton}>
+                    <Button
+                        title={`Date: ${updatedBet.date.toDateString()}`}
+                        onPress={() => setShowDatePicker(true)}
+                    />
+                </View>
+                {showDatePicker && (
+                    <RNDateTimePicker
+                        value={updatedBet.date}
+                        mode='date'
+                        display='default'
+                        onChange={(event, selectedDate) => {
+                            setShowDatePicker(false);
+                            const currentDate = selectedDate || updatedBet.date;
+                            handleChange('date', currentDate);
+                        }}
+                    />
+                )}
                 <View style={styles.buttons}>
                     <Button title="Update Bet" onPress={updateBetToDB} />
                     <Button title="Delete Bet" color="red" onPress={handleDeleteBet} />
@@ -147,5 +175,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         marginTop: 16
-    }
+    }, 
+    dateButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16
+    },
 });

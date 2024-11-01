@@ -7,7 +7,7 @@ import { BetsContext } from '../context/BetsContexts';
 
 
 export default function BetsScreen({ navigation }) {
-    
+
     const [expandedBet, setExpandedBet] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedBetId, setSelectedBetId] = useState(null);
@@ -31,7 +31,7 @@ export default function BetsScreen({ navigation }) {
     }
 
     const updateStatus = (status) => {
-        try{
+        try {
             const betRef = doc(db, 'bets', selectedBetId);
             updateDoc(betRef, {
                 status: status
@@ -95,18 +95,15 @@ export default function BetsScreen({ navigation }) {
                                     <Text>Date: {item.date.toDateString()}</Text>
                                 </View>
                                 <View style={styles.buttons}>
-                                    <Button title="Edit" onPress={() => navigation.navigate('EditBet', {
-                                        bet: {
-                                            id: item.id,
-                                            name: item.name,
-                                            stake: item.stake,
-                                            odds: item.odds,
-                                            sport: item.sport,
-                                            status: item.status,
-                                            bookmaker: item.bookmaker
-                                        }
-                                    })} />
-                                    <Button title="Delete" color="red" onPress={() => deleteBet(item.id)} />
+                                    <Button
+                                        title="Edit"
+                                        onPress={() => navigation.navigate('EditBet', {betId: item.id})}
+                                    />
+                                    <Button
+                                        title="Delete"
+                                        color="red"
+                                        onPress={() => deleteBet(item.id)}
+                                    />
                                 </View>
                             </View>
                         )}
