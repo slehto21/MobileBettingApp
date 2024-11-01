@@ -5,6 +5,7 @@ import { BetsContext } from "./BetsContexts";
 
 export const BetsProvider = ({ children }) => {
     const [bets, setBets] = useState([]);
+    const [betsAsc, setBetsAsc] = useState([]);
     const [sports, setSports] = useState([
         'Football',
         'Basketball',
@@ -83,6 +84,7 @@ export const BetsProvider = ({ children }) => {
                     date: convertFirestoreTimestampToDate(doc.data().date)
                 }));
                 setBets(tempBets);
+                setBetsAsc(tempBets.slice().reverse());
             });
             return () => unsub();
         } catch (e) {
@@ -106,7 +108,7 @@ export const BetsProvider = ({ children }) => {
     };
 
     return (
-        <BetsContext.Provider value={{ bets, sports, bookmakers, statuses, deleteBet }}>
+        <BetsContext.Provider value={{ bets, betsAsc, sports, bookmakers, statuses, deleteBet }}>
             {children}
         </BetsContext.Provider>
     );
