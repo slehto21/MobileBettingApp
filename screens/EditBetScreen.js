@@ -9,8 +9,7 @@ import RNDateTimePicker from '@react-native-community/datetimepicker';
 
 export default function EditBetScreen({ route, navigation }) {
 
-    const { sports, bookmakers, statuses, deleteBet } = useContext(BetsContext);
-    const { bets } = useContext(BetsContext);
+    const { bets, sports, bookmakers, statuses, deleteBet } = useContext(BetsContext);
     const { betId } = route.params;
     const [updatedBet, setUpdatedBet] = useState({
         name: '',
@@ -25,8 +24,13 @@ export default function EditBetScreen({ route, navigation }) {
 
     useEffect(() => {
         const bet = bets.find(bet => bet.id === betId);
-        setUpdatedBet(bet);
-    }, [betId]);
+        if (bet) {
+            setUpdatedBet(prevState => ({
+                ...prevState,
+                ...bet
+            }));
+        }
+    }, [betId, bets]);
 
     const handleChange = (name, value) => {
         setUpdatedBet({ ...updatedBet, [name]: value });

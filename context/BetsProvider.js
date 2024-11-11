@@ -90,7 +90,7 @@ export const BetsProvider = ({ children }) => {
         } catch (e) {
             console.error('Error fetching bets: ', e);
         }
-    }, []);
+    }, [auth.currentUser]);
 
     const convertFirestoreTimestampToDate = (timestamp) => {
         if (timestamp && timestamp.seconds) {
