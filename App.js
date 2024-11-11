@@ -13,6 +13,7 @@ import HomeScreen from './screens/HomeScreen';
 import BetsScreen from './screens/BetsScreen';
 import AddBetScreen from './screens/AddBetScreen';
 import EditBetScreen from './screens/EditBetScreen';
+import FixturesScreen from './screens/FixturesScreen';
 
 
 const Stack = createStackNavigator();
@@ -30,6 +31,8 @@ function MainTabs() {
               iconName = focused ? 'home' : 'home-outline';
             } else if (route.name === 'Bets') {
               iconName = focused ? 'ticket' : 'ticket-outline';
+            } else if (route.name === 'Fixtures') {
+              iconName = focused ? 'calendar' : 'calendar-outline';
             } else if (route.name === 'SignOut') {
               iconName = focused ? 'log-out' : 'log-out-outline';
             }
@@ -40,6 +43,7 @@ function MainTabs() {
       >
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Bets" component={BetsScreen} />
+        <Tab.Screen name="Fixtures" component={FixturesScreen} />
         <Tab.Screen name="SignOut">
           {(props) => <SignOutScreen {...props} />}
         </Tab.Screen>
