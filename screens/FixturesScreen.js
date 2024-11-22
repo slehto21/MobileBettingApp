@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Pressable, StyleSheet, SectionList } from 'react-native';
 import { fetchFixtures } from '../services/api/fetchFixtures';
 import { Linking } from 'react-native';
 
 export default function FixturesScreen() {
 
     const [fixtures, setFixtures] = useState([]);
-    const [selectedSport, setSelectedSport] = useState(null);
     const [selectedFixture, setSelectedFixture] = useState(null);
 
     useEffect(() => {
@@ -18,6 +17,14 @@ export default function FixturesScreen() {
         getFixtures();
     }, []);
 
+    const sections = fixtures.map((sportFixtures) => {
+        const sport = Object.keys(sportFixtures)[0];
+        return {
+            title: sport.toUpperCase(),
+            data: sportFixtures[sport],
+        };
+    });
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const day = date.getDate().toString().padStart(2, '0');
@@ -25,7 +32,7 @@ export default function FixturesScreen() {
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         return `${day}.${month}, ${hours}:${minutes}`;
-    };    
+    };
 
     //Fixtures: [{"icehockey": [[Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object]]}, 
     // {"soccer": [[Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object]]}]
@@ -58,63 +65,37 @@ export default function FixturesScreen() {
     );
 
     return (
-        <View style={styles.container}>
-            {fixtures.length === 0 ? (
-                <Text style={styles.noFixturesText}>No fixtures available</Text>
-            ) : (
-                fixtures.map((sportFixtures, index) => {
-                    const sport = Object.keys(sportFixtures)[0];
-                    return (
-                        <View key={index}>
-                            <Pressable onPress={() => setSelectedSport(selectedSport === sport ? null : sport)}>
-                                <Text style={styles.sportTitle}>
-                                    {selectedSport === sport ? '▼' : '▶'} {sport.toUpperCase()}
-                                </Text>
-                            </Pressable>
-                            {selectedSport === sport && (
-                                <FlatList
-                                    data={sportFixtures[sport]}
-                                    keyExtractor={(item, idx) => `${item.homeTeam}-${item.awayTeam}-${idx}`}
-                                    renderItem={({ item }) => (
-                                        <Pressable onPress={() => setSelectedFixture(selectedFixture === item ? null : item)}>
-                                            <Text style={styles.fixtureText}>
-                                                {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam} | {formatDate(item.commenceTime)}
-                                            </Text>
-                                            {selectedFixture === item && renderFixtureDetails(item)}
-                                        </Pressable>
-                                    )}
-                                />
-                            )}
-                        </View>
-                    );
-                })
+        <SectionList
+            sections={sections}
+            keyExtractor={(item, index) => `${item.homeTeam}-${item.awayTeam}-${index}`}
+            renderSectionHeader={({ section: { title } }) => (
+                <Pressable>
+                    <Text style={styles.sportTitle}>{title}</Text>
+                </Pressable>
             )}
-        </View>
+            renderItem={({ item }) => (
+                <Pressable onPress={() => setSelectedFixture(selectedFixture === item ? null : item)}>
+                    <Text style={styles.fixtureText}>
+                        {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam} | {formatDate(item.commenceTime)}
+                    </Text>
+                    {selectedFixture === item && renderFixtureDetails(item)}
+                </Pressable>
+            )}
+            contentContainerStyle={styles.container}
+            ListEmptyComponent={<Text style={styles.noFixturesText}>No fixtures available</Text>}
+        />
     );
 }
 
 const styles = StyleSheet.create({
     container: {
+        flexGrow: 1,
         padding: 10,
-    },
-    sportContainer: {
-        marginBottom: 15,
-    },
-    sportPressable: {
-        backgroundColor: '#f0f0f0',
-        padding: 10,
-        borderRadius: 5,
     },
     sportTitle: {
         fontSize: 20,
-        padding: 10,
         fontWeight: 'bold',
-    },
-    fixturePressable: {
-        backgroundColor: '#e0e0e0',
-        padding: 10,
-        borderRadius: 5,
-        marginVertical: 5,
+        paddingVertical: 10,
     },
     fixtureText: {
         fontSize: 16,
