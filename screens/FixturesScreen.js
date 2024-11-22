@@ -47,32 +47,36 @@ export default function FixturesScreen() {
 
     return (
         <View style={styles.container}>
-            {fixtures.map((sportFixtures, index) => {
-                const sport = Object.keys(sportFixtures)[0];
-                return (
-                    <View key={index} style={styles.sportContainer}>
-                        <Pressable onPress={() => setSelectedSport(selectedSport === sport ? null : sport)} style={styles.sportPressable}>
-                            <Text style={styles.sportTitle}>
-                               {selectedSport === sport ? '▼' : '▶'} {sport.toUpperCase()} 
-                            </Text>
-                        </Pressable>
-                        {selectedSport === sport && (
-                            <FlatList
-                                data={sportFixtures[sport]}
-                                keyExtractor={(item, idx) => `${item.homeTeam}-${item.awayTeam}-${idx}`}
-                                renderItem={({ item }) => (
-                                    <Pressable onPress={() => setSelectedFixture(selectedFixture === item ? null : item)} style={styles.fixturePressable}>
-                                        <Text style={styles.fixtureText}>
-                                            {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam}
-                                        </Text>
-                                        {selectedFixture === item && renderFixtureDetails(item)}
-                                    </Pressable>
-                                )}
-                            />
-                        )}
-                    </View>
-                );
-            })}
+            {fixtures.length === 0 ? (
+                <Text style={styles.noFixturesText}>No fixtures available</Text>
+            ) : (
+                fixtures.map((sportFixtures, index) => {
+                    const sport = Object.keys(sportFixtures)[0];
+                    return (
+                        <View key={index}>
+                            <Pressable onPress={() => setSelectedSport(selectedSport === sport ? null : sport)}>
+                                <Text style={styles.sportTitle}>
+                                    {selectedSport === sport ? '▼' : '▶'} {sport.toUpperCase()}
+                                </Text>
+                            </Pressable>
+                            {selectedSport === sport && (
+                                <FlatList
+                                    data={sportFixtures[sport]}
+                                    keyExtractor={(item, idx) => `${item.homeTeam}-${item.awayTeam}-${idx}`}
+                                    renderItem={({ item }) => (
+                                        <Pressable onPress={() => setSelectedFixture(selectedFixture === item ? null : item)}>
+                                            <Text style={styles.fixtureText}>
+                                                {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam}
+                                            </Text>
+                                            {selectedFixture === item && renderFixtureDetails(item)}
+                                        </Pressable>
+                                    )}
+                                />
+                            )}
+                        </View>
+                    );
+                })
+            )}
         </View>
     );
 }
@@ -101,6 +105,10 @@ const styles = StyleSheet.create({
     },
     fixtureText: {
         fontSize: 16,
+    },
+    noFixturesText: {
+        fontSize: 20,
+        textAlign: 'center',
     },
     detailsContainer: {
         paddingLeft: 20,
