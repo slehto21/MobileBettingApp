@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet } from 'react-native';
 import { fetchFixtures } from '../services/api/fetchFixtures';
+import { Linking } from 'react-native';
 
 export default function FixturesScreen() {
 
@@ -18,9 +19,13 @@ export default function FixturesScreen() {
     }, []);
 
     const formatDate = (dateString) => {
-        const options = { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric', year: 'numeric' };
-        return new Date(dateString).toLocaleDateString('fi-FI', options).replace(' klo', ';');
-    };
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${day}.${month}, ${hours}:${minutes}`;
+    };    
 
     //Fixtures: [{"icehockey": [[Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object]]}, 
     // {"soccer": [[Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object]]}]
@@ -28,7 +33,6 @@ export default function FixturesScreen() {
     const renderFixtureDetails = (fixture) => (
         <View style={styles.detailsContainer}>
             <Text style={styles.detailText}>League: {fixture.league}</Text>
-            <Text style={styles.detailText}>Start Time: {formatDate(fixture.commenceTime)}</Text>
             {fixture.bookmakers.map((bookmaker, index) => (
                 <View key={index} style={styles.bookmakerContainer}>
                     <Text style={styles.bookmakerTitle}>{bookmaker.name}</Text>
@@ -38,6 +42,14 @@ export default function FixturesScreen() {
                             {market.outcomes.map((outcome, i) => (
                                 <Text key={i}>{outcome.name}: {outcome.odds}</Text>
                             ))}
+                            {bookmaker.link && (
+                                <Text>
+                                    <Text>Link: </Text>
+                                    <Text style={{ color: 'blue' }} onPress={() => Linking.openURL(bookmaker.link)}>
+                                        {bookmaker.link}
+                                    </Text>
+                                </Text>
+                            )}
                         </View>
                     ))}
                 </View>
@@ -66,7 +78,7 @@ export default function FixturesScreen() {
                                     renderItem={({ item }) => (
                                         <Pressable onPress={() => setSelectedFixture(selectedFixture === item ? null : item)}>
                                             <Text style={styles.fixtureText}>
-                                                {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam}
+                                                {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam} | {formatDate(item.commenceTime)}
                                             </Text>
                                             {selectedFixture === item && renderFixtureDetails(item)}
                                         </Pressable>
@@ -95,6 +107,7 @@ const styles = StyleSheet.create({
     },
     sportTitle: {
         fontSize: 20,
+        padding: 10,
         fontWeight: 'bold',
     },
     fixturePressable: {
@@ -105,6 +118,7 @@ const styles = StyleSheet.create({
     },
     fixtureText: {
         fontSize: 16,
+        padding: 10,
     },
     noFixturesText: {
         fontSize: 20,
