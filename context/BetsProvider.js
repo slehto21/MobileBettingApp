@@ -5,7 +5,13 @@ import { BetsContext } from "./BetsContexts";
 
 export const BetsProvider = ({ children }) => {
     const [bets, setBets] = useState([]);
+    // Ascending order
     const [betsAsc, setBetsAsc] = useState([]);
+    const [sevenDayBets, setSevenDayBets] = useState([]);
+    const [thirtyDayBets, setThirtyDayBets] = useState([]);
+    const [ninetyDayBets, setNinetyDayBets] = useState([]);
+    const [yearBets, setYearBets] = useState([]);
+    const [YTDBets, setYTDBets] = useState([]);
     const [sports, setSports] = useState([
         'Football',
         'Basketball',
@@ -70,7 +76,7 @@ export const BetsProvider = ({ children }) => {
             if (!auth.currentUser) {
                 return;
             }
-            
+
             const betsQuery = query(
                 collection(db, 'bets'),
                 where('user', '==', auth.currentUser.uid),
@@ -83,14 +89,28 @@ export const BetsProvider = ({ children }) => {
                     ...doc.data(),
                     date: convertFirestoreTimestampToDate(doc.data().date)
                 }));
-                setBets(tempBets);
+                setBets(tempBets);  
                 setBetsAsc(tempBets.slice().reverse());
+                const today = new Date();
+                setSevenDayBets(getBetsByDate(tempBets, today, 7));
+                setThirtyDayBets(getBetsByDate(tempBets, today, 30));
+                setNinetyDayBets(getBetsByDate(tempBets, today, 90));
+                setYearBets(getBetsByDate(tempBets, today, 365));
+                setYTDBets(getBetsByDate(tempBets, today, Math.round(
+                    (today - new Date(today.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24))
+                ));
             });
             return () => unsub();
         } catch (e) {
             console.error('Error fetching bets: ', e);
         }
     }, [auth.currentUser]);
+
+    const getBetsByDate = (betsList, today, days) => {
+        let endDate = new Date();
+        endDate.setDate(today.getDate() - days);
+        return betsList.filter(bet => bet.date > endDate).reverse();
+    };
 
     const convertFirestoreTimestampToDate = (timestamp) => {
         if (timestamp && timestamp.seconds) {
@@ -108,7 +128,7 @@ export const BetsProvider = ({ children }) => {
     };
 
     return (
-        <BetsContext.Provider value={{ bets, betsAsc, sports, bookmakers, statuses, deleteBet }}>
+        <BetsContext.Provider value={{ bets, betsAsc, sevenDayBets, thirtyDayBets, ninetyDayBets, yearBets, YTDBets, sports, bookmakers, statuses, deleteBet }}>
             {children}
         </BetsContext.Provider>
     );

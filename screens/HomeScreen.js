@@ -5,29 +5,33 @@ import { LineChart } from 'react-native-gifted-charts';
 
 export default function HomeScreen() {
 
-    const { bets, betsAsc } = useContext(BetsContext);
+    const { betsAsc, sevenDayBets, thirtyDayBets, ninetyDayBets, yearBets, YTDBets } = useContext(BetsContext);
     const [isBets, setIsBets] = useState(false);
     const [balanceOverTime, setBalanceOverTime] = useState([]);
+    const [minBalance, setMinBalance] = useState(0);
     const [maxBalance, setMaxBalance] = useState(0);
+    const [dateRange, setDateRange] = useState('All Time');
+    const [stats, setStats] = useState({
+        totalBets: 0,
+        totalStake: 0,
+        profit: 0,
+        roi: 0,
+        winRate: 0,
+        avgOdds: 0,
+        avgStake: 0,
+        avgProfit: 0,
+        pendingBets: 0,
+        pendingStake: 0,
+    });
 
-    const profit = useMemo(() => {
-        return bets.reduce((acc, bet) => {
-            if (bet.status === 'Won') {
-                return acc + (bet.stake * (bet.odds - 1));
-            } else if (bet.status === 'Lost') {
-                return acc - bet.stake;
-            } else if (bet.status === 'Half Won') {
-                return acc + ((bet.stake / 2) * (bet.odds - 1));
-            } else if (bet.status === 'Half Lost') {
-                return acc - (bet.stake / 2);
-            }
-            return acc;
-        }, 0);
-    }, [bets]);
-
-    const calculateBalanceOverTime = () => {
+    const calculateBalanceOverTime = (bets, dateRange) => {
+        if (bets.length === 0) {
+            setBalanceOverTime([]);
+            return;
+        }
         let localMaxBalance = 0;
-        const result = betsAsc.reduce((acc, bet) => {
+        let localMinBalance = 0;
+        const result = bets.reduce((acc, bet) => {
             let newValue;
             if (bet.status === 'Won') {
                 newValue = acc[acc.length - 1].value + (bet.stake * (bet.odds - 1));
@@ -58,12 +62,75 @@ export default function HomeScreen() {
             if (newValue > localMaxBalance) {
                 localMaxBalance = newValue;
             }
+            if (newValue < localMinBalance) {
+                localMinBalance = newValue;
+            }
 
             return acc;
-        }, [{ value: 0, date: betsAsc[0].date.toISOString(), label: new Date(betsAsc[0].date).toLocaleDateString('fi-FI', { day: '2-digit', month: '2-digit' }) }]);
+        }, [{ value: 0, date: bets[0].date.toISOString(), label: new Date(bets[0].date).toLocaleDateString('fi-FI', { day: '2-digit', month: '2-digit' }) }]);
         setMaxBalance(localMaxBalance);
-        return result;
+        setMinBalance(localMinBalance);
+        setBalanceOverTime(result);
+        setDateRange(dateRange);
     }
+
+    const statsOverTime = (bets) => {
+        if (bets.length === 0) {
+            setStats({
+                totalBets: 0,
+                totalStake: 0,
+                profit: 0,
+                roi: 0,
+                winRate: 0,
+                avgOdds: 0,
+                avgStake: 0,
+                avgProfit: 0,
+                pendingBets: 0,
+                pendingStake: 0,
+            });
+            return;
+        }
+        const totalBets = bets.length;
+        const totalStake = bets.reduce((acc, bet) => acc + bet.stake, 0);
+        const profit = bets.reduce((acc, bet) => {
+            if (bet.status === 'Won') {
+                return acc + (bet.stake * (bet.odds - 1));
+            } else if (bet.status === 'Lost') {
+                return acc - bet.stake;
+            } else if (bet.status === 'Half Won') {
+                return acc + ((bet.stake / 2) * (bet.odds - 1));
+            } else if (bet.status === 'Half Lost') {
+                return acc - (bet.stake / 2);
+            }
+            return acc;
+        }, 0);
+        const roi = (profit / totalStake) * 100;
+        const winRate = (bets.filter(bet => bet.status === 'Won').length / totalBets) * 100;
+        const avgOdds = bets.reduce((acc, bet) => acc + bet.odds, 0) / totalBets;
+        const avgStake = totalStake / totalBets;
+        const avgProfit = profit / totalBets;
+        const pendingBets = bets.filter(bet => bet.status === 'Pending');
+        const pendingStake = pendingBets.reduce((acc, bet) => acc + bet.stake, 0);
+
+        setStats({
+            totalBets,
+            totalStake,
+            profit,
+            roi,
+            winRate,
+            avgOdds,
+            avgStake,
+            avgProfit,
+            pendingBets: pendingBets.length,
+            pendingStake,
+        });
+    }
+
+    const callOverTime = (bets, dateRange) => {
+        calculateBalanceOverTime(bets, dateRange);
+        statsOverTime(bets);
+    }
+
 
     useEffect(() => {
         if (betsAsc.length === 0 || !betsAsc[0].date) {
@@ -72,25 +139,9 @@ export default function HomeScreen() {
             setBalanceOverTime([]);
             return;
         }
-
-        console.log('Lasketaan balance over time');
-        const calculatedBalance = calculateBalanceOverTime();
-        setBalanceOverTime(calculatedBalance);
+        callOverTime(betsAsc, "All Time");
         setIsBets(true);
     }, [betsAsc]);
-
-    const totalBets = bets.length;
-    const totalStake = bets.reduce((acc, bet) => acc + bet.stake, 0);
-    const roi = (profit / totalStake) * 100;
-    const winRate = (bets.filter(bet => bet.status === 'Won').length / totalBets) * 100;
-    const avgOdds = bets.reduce((acc, bet) => acc + bet.odds, 0) / totalBets;
-    const avgStake = totalStake / totalBets;
-    const avgProfit = profit / totalBets;
-    const pendingBets = bets.filter(bet => bet.status === 'Pending');
-    const pendingStake = pendingBets.reduce((acc, bet) => acc + bet.stake, 0);
-
-    console.log('Balance Over Time: ', balanceOverTime);
-    console.log('Max Balance: ', maxBalance);
 
     return (
         <View style={styles.container}>
@@ -101,7 +152,11 @@ export default function HomeScreen() {
                         data={balanceOverTime}
                         rotateLabel
                         noOfSections={5}
-                        maxValue={maxBalance}
+                        noOfSectionsBelowXAxis={5}
+                        maxValue={maxBalance > 0 ? maxBalance : 100}
+                        mostNegativeValue={minBalance < 0 ? minBalance : -100}
+                        stepValue={maxBalance > 0 ? maxBalance / 5 : 20}
+                        negativeStepValue={minBalance < 0 ? -(minBalance / 5) : -20}
                         hideDataPoints
                         highlightedRange={{
                             from: 0,
@@ -113,7 +168,7 @@ export default function HomeScreen() {
                         xAxisColor="black"
                         yAxisThickness={1}
                         yAxisTextStyle={{ color: 'gray' }}
-                        height={150}
+                        height={125}
                         thickness={1.5}
                         color="red"
                         rulesColor="gray"
@@ -129,7 +184,6 @@ export default function HomeScreen() {
                             activatePointersDelay: 500,
                             autoAdjustPointerLabelPosition: true,
                             pointerLabelComponent: items => {
-                                console.log('Full item data:', items[0]);
                                 return (
                                     <View style={styles.pointerView} >
                                         <Text style={styles.pointerLabel}>
@@ -147,45 +201,109 @@ export default function HomeScreen() {
                         }}
                     />
                     <View style={styles.buttonContainer}>
-                        <Button title='7 Days' />
-                        <Button title='30 Days' />
-                        <Button title='90 Days' />
-                        <Button title='365 Days' />
-                        <Button title='YTD' />
-                        <Button title='All Time' />
+                        <View style={styles.buttonRow}>
+                            <View
+                                style={[
+                                    styles.buttonWrapper,
+                                    dateRange === "7 Days" && styles.activeButton,
+                                ]}
+                            >
+                                <Button
+                                    title="7 Days"
+                                    onPress={() => callOverTime(sevenDayBets, "7 Days")}
+                                />
+                            </View>
+                            <View
+                                style={[
+                                    styles.buttonWrapper,
+                                    dateRange === "30 Days" && styles.activeButton,
+                                ]}
+                            >
+                                <Button
+                                    title="30 Days"
+                                    onPress={() => callOverTime(thirtyDayBets, "30 Days")}
+                                />
+                            </View>
+                            <View
+                                style={[
+                                    styles.buttonWrapper,
+                                    dateRange === "90 Days" && styles.activeButton,
+                                ]}
+                            >
+                                <Button
+                                    title="90 Days"
+                                    onPress={() => callOverTime(ninetyDayBets, "90 Days")}
+                                />
+                            </View>
+                        </View>
+                        <View style={styles.buttonRow}>
+                            <View
+                                style={[
+                                    styles.buttonWrapper,
+                                    dateRange === "365 Days" && styles.activeButton,
+                                ]}
+                            >
+                                <Button
+                                    title="365 Days"
+                                    onPress={() => callOverTime(yearBets, "365 Days")}
+                                />
+                            </View>
+                            <View
+                                style={[
+                                    styles.buttonWrapper,
+                                    dateRange === "YTD" && styles.activeButton,
+                                ]}
+                            >
+                                <Button
+                                    title="YTD"
+                                    onPress={() => callOverTime(YTDBets, "YTD")}
+                                />
+                            </View>
+                            <View
+                                style={[
+                                    styles.buttonWrapper,
+                                    dateRange === "All Time" && styles.activeButton,
+                                ]}
+                            >
+                                <Button
+                                    title="All Time"
+                                    onPress={() => callOverTime(betsAsc, "All Time")}
+                                />
+                            </View>
+                        </View>
                     </View>
                 </View>
             )}
             <View style={styles.statsContainer}>
                 <View style={styles.box}>
-                    <Text>Total Bets: {totalBets}</Text>
+                    <Text>Total Bets: {stats.totalBets}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Total Stake: {totalStake}</Text>
+                    <Text>Total Stake: {stats.totalStake}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Profit: {profit}</Text>
+                    <Text>Profit: {stats.profit}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>ROI: {roi.toFixed(2)}%</Text>
+                    <Text>ROI: {stats.roi.toFixed(2)}%</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Win Rate: {winRate.toFixed(2)}%</Text>
+                    <Text>Win Rate: {stats.winRate.toFixed(2)}%</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Avg Odds: {avgOdds.toFixed(2)}</Text>
+                    <Text>Avg Odds: {stats.avgOdds.toFixed(2)}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Avg Stake: {avgStake.toFixed(2)}</Text>
+                    <Text>Avg Stake: {stats.avgStake.toFixed(2)}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Avg Profit: {avgProfit.toFixed(2)}</Text>
+                    <Text>Avg Profit: {stats.avgProfit.toFixed(2)}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Pending Bets: {pendingBets.length}</Text>
+                    <Text>Pending Bets: {stats.pendingBets}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Pending Stake: {pendingStake}</Text>
+                    <Text>Pending Stake: {stats.pendingStake}</Text>
                 </View>
             </View>
         </View>
@@ -209,17 +327,30 @@ const styles = StyleSheet.create({
     },
     box: {
         width: '48%',
-        padding: 10,
+        padding: 7,
         marginVertical: 5,
         backgroundColor: '#f0f0f0',
         borderRadius: 5,
     },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        flexWrap: 'wrap',
+        justifyContent: "space-between",
+        padding: 2,
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
         width: '100%',
-        marginVertical: 10,
-        marginHorizontal: 10,
+    },
+    buttonWrapper: {
+        margin: 3,
+        borderRadius: 5,
+        overflow: "hidden",
+    },
+    activeButton: {
+        borderWidth: 2,
+        borderColor: "blue",
     },
     pointerView: {
         height: 90,
