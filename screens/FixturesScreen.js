@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, SectionList } from 'react-native';
+import { View, Text, Pressable, StyleSheet, SectionList } from 'react-native';
 import { fetchFixtures } from '../services/api/fetchFixtures';
 import { Linking } from 'react-native';
 
@@ -7,23 +7,30 @@ export default function FixturesScreen() {
 
     const [fixtures, setFixtures] = useState([]);
     const [selectedFixture, setSelectedFixture] = useState(null);
+    const [sections, setSections] = useState([]);
 
     useEffect(() => {
         console.log('Fetching fixtures...');
         async function getFixtures() {
             const fixtures = await fetchFixtures();
             setFixtures(fixtures);
+
+            if (!fixtures || fixtures.length === 0) {
+                return;
+            }
+            const sections = fixtures.map((sportFixtures) => {
+                const sport = Object.keys(sportFixtures)[0];
+                return {
+                    title: sport.toUpperCase(),
+                    data: sportFixtures[sport],
+                };
+            });
+            setSections(sections);
         }
         getFixtures();
     }, []);
 
-    const sections = fixtures.map((sportFixtures) => {
-        const sport = Object.keys(sportFixtures)[0];
-        return {
-            title: sport.toUpperCase(),
-            data: sportFixtures[sport],
-        };
-    });
+
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -33,9 +40,6 @@ export default function FixturesScreen() {
         const minutes = date.getMinutes().toString().padStart(2, '0');
         return `${day}.${month}, ${hours}:${minutes}`;
     };
-
-    //Fixtures: [{"icehockey": [[Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object]]}, 
-    // {"soccer": [[Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object], [Object]]}]
 
     const renderFixtureDetails = (fixture) => (
         <View style={styles.detailsContainer}>
@@ -73,14 +77,16 @@ export default function FixturesScreen() {
                     <Text style={styles.sportTitle}>{title}</Text>
                 </Pressable>
             )}
-            renderItem={({ item }) => (
-                <Pressable onPress={() => setSelectedFixture(selectedFixture === item ? null : item)}>
-                    <Text style={styles.fixtureText}>
-                        {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam} | {formatDate(item.commenceTime)}
-                    </Text>
-                    {selectedFixture === item && renderFixtureDetails(item)}
-                </Pressable>
-            )}
+            renderItem={({ item }) => {
+                return (
+                    <Pressable onPress={() => setSelectedFixture(selectedFixture === item ? null : item)}>
+                        <Text style={new Date(item.commenceTime) < new Date() ? styles.fixtureTextOver : styles.fixtureText}>
+                            {selectedFixture === item ? '▼' : '▶'} {item.homeTeam} vs {item.awayTeam} | {formatDate(item.commenceTime)}
+                        </Text>
+                        {selectedFixture === item && renderFixtureDetails(item)}
+                    </Pressable>
+                );
+            }}
             contentContainerStyle={styles.container}
             ListEmptyComponent={<Text style={styles.noFixturesText}>No fixtures available</Text>}
         />
@@ -100,6 +106,11 @@ const styles = StyleSheet.create({
     fixtureText: {
         fontSize: 16,
         padding: 10,
+    },
+    fixtureTextOver: {
+        fontSize: 16,
+        padding: 10,
+        color: 'red',
     },
     noFixturesText: {
         fontSize: 20,
