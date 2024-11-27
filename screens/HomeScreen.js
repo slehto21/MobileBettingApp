@@ -153,17 +153,14 @@ export default function HomeScreen() {
                         rotateLabel
                         noOfSections={5}
                         noOfSectionsBelowXAxis={5}
-                        maxValue={maxBalance > 0 ? maxBalance : 100}
-                        mostNegativeValue={minBalance < 0 ? minBalance : -100}
-                        stepValue={maxBalance > 0 ? maxBalance / 5 : 20}
-                        negativeStepValue={minBalance < 0 ? -(minBalance / 5) : -20}
+                        maxValue={maxBalance > -minBalance ? maxBalance : -minBalance}
+                        stepValue={maxBalance > -minBalance ? maxBalance / 5 : -minBalance / 5}
                         hideDataPoints
                         highlightedRange={{
                             from: 0,
                             to: maxBalance,
                             color: 'green'
                         }}
-
                         yAxisColor="black"
                         xAxisColor="black"
                         yAxisThickness={1}
@@ -282,7 +279,7 @@ export default function HomeScreen() {
                     <Text>Total Stake: {stats.totalStake}</Text>
                 </View>
                 <View style={styles.box}>
-                    <Text>Profit: {stats.profit}</Text>
+                    <Text>Profit: {stats.profit.toFixed(2)}</Text>
                 </View>
                 <View style={styles.box}>
                     <Text>ROI: {stats.roi.toFixed(2)}%</Text>
