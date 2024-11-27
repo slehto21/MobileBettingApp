@@ -57,10 +57,19 @@ function AppNavigator() {
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   useEffect(() => {
+    try{
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsSignedIn(!!user);
+      if (user) {
+        setIsSignedIn(true);
+      } else {
+        setIsSignedIn(false);
+      }
     });
-    return unsubscribe;
+  
+    return () => unsubscribe();
+  } catch (error) {
+    console.error(error);
+  }
   }, []);
 
   return (

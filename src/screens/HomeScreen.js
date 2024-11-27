@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 import { BetsContext } from '../context/BetsContexts';
 import { LineChart } from 'react-native-gifted-charts';
@@ -134,7 +134,6 @@ export default function HomeScreen() {
 
     useEffect(() => {
         if (betsAsc.length === 0 || !betsAsc[0].date) {
-            console.log('Ei betsejä');
             setIsBets(false);
             setBalanceOverTime([]);
             return;

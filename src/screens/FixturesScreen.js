@@ -11,7 +11,6 @@ export default function FixturesScreen() {
     const [sections, setSections] = useState([]);
 
     useEffect(() => {
-        console.log('Fetching fixtures...');
         async function getFixtures() {
             const fixtures = await fetchFixtures();
             setFixtures(fixtures);

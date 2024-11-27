@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
 import { signIn } from '../services/authService';
 
 export default function SignInScreen({ onSignIn, navigation }) {
 
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSignIn = async () => {
     try {
@@ -15,6 +15,7 @@ export default function SignInScreen({ onSignIn, navigation }) {
       }
     } catch (error) {
       console.error(error);
+      alert('Invalid email or password. Please try again.');
     }
   }
 

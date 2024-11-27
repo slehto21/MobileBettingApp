@@ -13,7 +13,7 @@ export const BetsProvider = ({ children }) => {
     const [ninetyDayBets, setNinetyDayBets] = useState([]);
     const [yearBets, setYearBets] = useState([]);
     const [YTDBets, setYTDBets] = useState([]);
-    const [sports, setSports] = useState([
+    const sports = [
         'Football',
         'Basketball',
         'Tennis',
@@ -38,8 +38,8 @@ export const BetsProvider = ({ children }) => {
         'Financials',
         'Virtual Sports',
         'Other'
-    ]);
-    const [bookmakers, setBookmakers] = useState([
+    ];
+    const bookmakers = [
         'Bet365',
         'William Hill',
         'Paddy Power',
@@ -60,8 +60,8 @@ export const BetsProvider = ({ children }) => {
         'Matchbook',
         'Spreadex',
         'Other'
-    ]);
-    const [statuses, setStatuses] = useState([
+    ];
+    const statuses = [
         'Pending',
         'Won',
         'Lost',
@@ -70,43 +70,64 @@ export const BetsProvider = ({ children }) => {
         'Half Lost',
         'Refunded',
         'Cancelled'
-    ]);
+    ];
+
 
     useEffect(() => {
-        try {
-            if (!auth.currentUser) {
-                return;
+        let unsubscribe = () => {};
+        
+        const setupListener = async () => {
+            if (auth.currentUser) {
+                try {
+                    const betsQuery = query(
+                        collection(db, 'bets'),
+                        where('user', '==', auth.currentUser.uid),
+                        orderBy('date', 'desc')
+                    );
+    
+                    unsubscribe = onSnapshot(betsQuery, (snapshot) => {
+                        const tempBets = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data(),
+                            date: convertFirestoreTimestampToDate(doc.data().date)
+                        }));
+                        setBets(tempBets);
+                        setBetsAsc(tempBets.slice().reverse());
+                        setBetsByMonth(getBetsByMonth(tempBets));
+                        const today = new Date();
+                        setSevenDayBets(getBetsByDate(tempBets, today, 7));
+                        setThirtyDayBets(getBetsByDate(tempBets, today, 30));
+                        setNinetyDayBets(getBetsByDate(tempBets, today, 90));
+                        setYearBets(getBetsByDate(tempBets, today, 365));
+                        setYTDBets(getBetsByDate(tempBets, today, Math.round(
+                            (today - new Date(today.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24))
+                        ));
+                    }, error => {
+                        if (error.code !== 'permission-denied') {
+                            console.error('Firestore error:', error);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error setting up listener:', error);
+                }
+            } else {
+                // Clear all data when user is not authenticated
+                setBets([]);
+                setBetsAsc([]);
+                setBetsByMonth([]);
+                setSevenDayBets([]);
+                setThirtyDayBets([]);
+                setNinetyDayBets([]);
+                setYearBets([]);
+                setYTDBets([]);
             }
-
-            const betsQuery = query(
-                collection(db, 'bets'),
-                where('user', '==', auth.currentUser.uid),
-                orderBy('date', 'desc')
-            );
-
-            const unsub = onSnapshot(betsQuery, (snapshot) => {
-                const tempBets = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    date: convertFirestoreTimestampToDate(doc.data().date)
-                }));
-                setBets(tempBets);
-                setBetsAsc(tempBets.slice().reverse());
-                setBetsByMonth(getBetsByMonth(tempBets));
-                const today = new Date();
-                setSevenDayBets(getBetsByDate(tempBets, today, 7));
-                setThirtyDayBets(getBetsByDate(tempBets, today, 30));
-                setNinetyDayBets(getBetsByDate(tempBets, today, 90));
-                setYearBets(getBetsByDate(tempBets, today, 365));
-                setYTDBets(getBetsByDate(tempBets, today, Math.round(
-                    (today - new Date(today.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24))
-                ));
-            });
-            //console.log('BetsByMonth: ', betsByMonth);
-            return () => unsub();
-        } catch (e) {
-            console.error('Error fetching bets: ', e);
-        }
+        };
+    
+        setupListener();
+    
+        return () => {
+            unsubscribe();
+        };
     }, [auth.currentUser]);
 
     const getBetsByDate = (betsList, today, days) => {
@@ -128,10 +149,9 @@ export const BetsProvider = ({ children }) => {
             if (!betsByMonth[title]) {
                 betsByMonth[title] = [];
             }
-    
+
             betsByMonth[title].push(bet);
         });
-        //console.log('BetsByMonth: ', betsByMonth);
         // Convert object to array
         return Object.keys(betsByMonth).map((title) => ({
             title,

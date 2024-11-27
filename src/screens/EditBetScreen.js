@@ -38,8 +38,6 @@ export default function EditBetScreen({ route, navigation }) {
 
     const updateBetToDB = async () => {
         try {
-            console.log('Bet: ', betId);
-            console.log('Updated Bet: ', updatedBet);
             const betRef = doc(db, 'bets', betId);
             await updateDoc(betRef, {
                 name: updatedBet.name,

@@ -15,7 +15,6 @@ export default function BetsScreen({ navigation }) {
     const { betsByMonth, statuses, deleteBet } = useContext(BetsContext);
 
     useEffect(() => {
-        console.log('BetsByMonth:', betsByMonth);
     }, [betsByMonth]);
 
     const toggleExpand = (betId) => {

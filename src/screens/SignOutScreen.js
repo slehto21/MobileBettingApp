@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Button, StyleSheet } from 'react-native';
 import { signOut } from '../services/authService';
 
 export default function SignOutScreen({ navigation }) {
@@ -7,7 +7,6 @@ export default function SignOutScreen({ navigation }) {
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigation.replace('SignIn');
     } catch (error) {
       console.error(error);
     }
@@ -15,7 +14,6 @@ export default function SignOutScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text>Sign Out Screen</Text>
       <Button title="Sign Out" onPress={handleSignOut} />
     </View>
   );
