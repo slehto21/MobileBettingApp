@@ -5,6 +5,7 @@ import { BetsContext } from "./BetsContexts";
 
 export const BetsProvider = ({ children }) => {
     const [bets, setBets] = useState([]);
+    const [betsByMonth, setBetsByMonth] = useState([]);
     // Ascending order
     const [betsAsc, setBetsAsc] = useState([]);
     const [sevenDayBets, setSevenDayBets] = useState([]);
@@ -89,8 +90,9 @@ export const BetsProvider = ({ children }) => {
                     ...doc.data(),
                     date: convertFirestoreTimestampToDate(doc.data().date)
                 }));
-                setBets(tempBets);  
+                setBets(tempBets);
                 setBetsAsc(tempBets.slice().reverse());
+                setBetsByMonth(getBetsByMonth(tempBets));
                 const today = new Date();
                 setSevenDayBets(getBetsByDate(tempBets, today, 7));
                 setThirtyDayBets(getBetsByDate(tempBets, today, 30));
@@ -100,6 +102,7 @@ export const BetsProvider = ({ children }) => {
                     (today - new Date(today.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24))
                 ));
             });
+            //console.log('BetsByMonth: ', betsByMonth);
             return () => unsub();
         } catch (e) {
             console.error('Error fetching bets: ', e);
@@ -111,6 +114,30 @@ export const BetsProvider = ({ children }) => {
         endDate.setDate(today.getDate() - days);
         return betsList.filter(bet => bet.date > endDate).reverse();
     };
+
+    const getBetsByMonth = (betsList) => {
+        const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        let betsByMonth = {};
+        betsList.forEach(bet => {
+            const year = bet.date.getFullYear();
+            const month = bet.date.getMonth();
+            const title = `${months[month]} ${year}`;
+            if (!betsByMonth[title]) {
+                betsByMonth[title] = [];
+            }
+    
+            betsByMonth[title].push(bet);
+        });
+        //console.log('BetsByMonth: ', betsByMonth);
+        // Convert object to array
+        return Object.keys(betsByMonth).map((title) => ({
+            title,
+            data: betsByMonth[title],
+        }));
+    }
 
     const convertFirestoreTimestampToDate = (timestamp) => {
         if (timestamp && timestamp.seconds) {
@@ -128,7 +155,7 @@ export const BetsProvider = ({ children }) => {
     };
 
     return (
-        <BetsContext.Provider value={{ bets, betsAsc, sevenDayBets, thirtyDayBets, ninetyDayBets, yearBets, YTDBets, sports, bookmakers, statuses, deleteBet }}>
+        <BetsContext.Provider value={{ bets, betsByMonth, betsAsc, sevenDayBets, thirtyDayBets, ninetyDayBets, yearBets, YTDBets, sports, bookmakers, statuses, deleteBet }}>
             {children}
         </BetsContext.Provider>
     );
