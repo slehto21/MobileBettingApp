@@ -6,6 +6,7 @@ import { Linking } from 'react-native';
 export default function FixturesScreen() {
 
     const [fixtures, setFixtures] = useState([]);
+    const [selectedSports, setSelectedSports] = useState({});
     const [selectedFixture, setSelectedFixture] = useState(null);
     const [sections, setSections] = useState([]);
 
@@ -30,7 +31,12 @@ export default function FixturesScreen() {
         getFixtures();
     }, []);
 
-
+    const toggleSection = (sport) => {
+        setSelectedSports((prevState) => ({
+            ...prevState,
+            [sport]: !prevState[sport],
+        }));
+    };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -70,11 +76,16 @@ export default function FixturesScreen() {
 
     return (
         <SectionList
-            sections={sections}
+            sections={sections.map(section => ({
+                ...section,
+                data: selectedSports[section.title] ? section.data : [], 
+            }))}
             keyExtractor={(item, index) => `${item.homeTeam}-${item.awayTeam}-${index}`}
             renderSectionHeader={({ section: { title } }) => (
-                <Pressable>
-                    <Text style={styles.sportTitle}>{title}</Text>
+                <Pressable onPress={() => toggleSection(title)}>
+                    <Text style={styles.sportTitle}>
+                        {selectedSports[title] ? '▼' : '▶'} {title}
+                    </Text>
                 </Pressable>
             )}
             renderItem={({ item }) => {
