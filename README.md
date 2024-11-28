@@ -6,12 +6,12 @@ Betting App is a mobile application designed to manage and analyze sports bets. 
 - User authentication (Sign-up, Sign-in, Sign-out)
 - Add, edit, delete bets
 - Track bets over time and display detailed statistics
-- View sports fixtures fetched from an external API
+- View upcoming sports fixtures fetched from backend
 
 ## Tech Stack
 
 - **Frontend**: React Native with Expo
-- **Backend**: Express.js with Node.js
+- [**Backend**](https://github.com/slehto21/BettingAppBack): Express.js with Node.js
 - **Database**: Firestore
 - **Caching**: Memcached
 - **Authentication**: Firebase Authentication
