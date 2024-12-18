@@ -1,6 +1,11 @@
 # Betting App
 
 Betting App is a mobile application designed to manage and analyze sports bets. Users can add, edit, and delete bets while keeping track of their progress and statistics over time.
+
+
+https://github.com/user-attachments/assets/00d94b92-7c99-44c2-91d0-18647a4e0473
+
+
 ## Features
 
 - User authentication (Sign-up, Sign-in, Sign-out)
